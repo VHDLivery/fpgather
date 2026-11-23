@@ -212,7 +212,40 @@ required.
 The build job validates package metadata with Twine and checks the installed
 wheel's CLI in a fresh environment. Successful builds are available as the
 `distributions` workflow artifact for seven days. CI requires no repository
-secrets and does not publish to PyPI.
+secrets and does not publish to PyPI. Publishing is handled separately below.
+
+## Publishing to PyPI
+
+The `release.yml` workflow publishes when a GitHub release is published. It
+checks that the release tag equals `v` followed by the version in
+`pyproject.toml`, reruns the complete CI workflow on the release commit, and
+uploads those validated distributions using PyPI Trusted Publishing.
+Ordinary pushes and pull requests never publish packages.
+
+One-time setup:
+
+1. Create a GitHub environment named `pypi` in this repository's settings.
+2. Sign in to PyPI and open
+   [account publishing settings](https://pypi.org/manage/account/publishing/).
+   Add a pending GitHub publisher with these exact values:
+   - PyPI project: `fpgather`
+   - Owner: `VHDLivery`
+   - Repository: `fpgather`
+   - Workflow filename: `release.yml`
+   - Environment: `pypi`
+   For an existing project you own, add it under that project's publishing
+   settings instead. No API token or GitHub secret is required.
+
+To release:
+
+1. Set the new version in `pyproject.toml`, commit and push the release changes.
+2. Publish a GitHub release with the matching tag, initially `v0.1.0`, targeting
+   that commit. Publishing the release triggers the PyPI upload.
+3. Check the `Publish to PyPI` workflow, then verify the release with
+   `python -m pip install fpgather==0.1.0` in a fresh environment.
+
+A pending publisher does not reserve the project name. PyPI distribution
+filenames cannot be reused; subsequent releases need a new version.
 
 ## License
 
