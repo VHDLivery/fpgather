@@ -1,0 +1,12 @@
+syntax_version: 1
+
+language_defaults:
+  ".vhd": "2008"
+
+sources:
+  - ../hdl/module_b.vhd
+  - ../hdl/wide_datapath.vhd:
+      if:
+        data_width: 32
+  - ../hdl/legacy.vhd:
+      language_version: "93"

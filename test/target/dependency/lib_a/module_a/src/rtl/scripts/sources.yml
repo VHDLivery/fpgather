@@ -1,0 +1,17 @@
+syntax_version: 1
+
+language_defaults:
+  ".vhd": "2008"
+
+sources:
+  - ../hdl/module_a.vhd
+  - ../hdl/debug.vhd:
+      if: debug
+  - ../hdl/optional.vhd:
+      if: optional_feature
+
+dependencies:
+  lib_b:
+    - module_b/src/rtl/scripts/sources.yml:
+        if:
+          target: xilinx

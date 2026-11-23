@@ -1,0 +1,3 @@
+include test/README.md test/run.py
+recursive-include test *.yml *.vhd
+include docs/design.md

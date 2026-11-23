@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fpgather"
+version = "0.1.0"
+description = "Resolve hierarchical sources.yml files and export HDL build inputs"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "VHDLivery", email = "vhdlivery@gmail.com"}]
+requires-python = ">=3.10"
+dependencies = ["PyYAML>=6,<7"]
+
+[project.optional-dependencies]
+test = ["pytest>=8,<10", "vunit_hdl==4.7.1"]
+dev = ["ruff>=0.11,<1"]
+
+[project.scripts]
+fpgather = "fpgather.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 79
+extend-exclude = ["build", "dist"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+
+[tool.ruff.lint.pycodestyle]
+max-doc-length = 72

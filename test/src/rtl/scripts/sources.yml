@@ -1,0 +1,16 @@
+syntax_version: 1
+
+language_defaults:
+  ".vhd": "2008"
+
+defines:
+  debug: true
+  target: xilinx
+  data_width: 32
+
+sources:
+  - ../hdl/top.vhd
+
+dependencies:
+  lib_a:
+    - module_a/src/rtl/scripts/sources.yml
