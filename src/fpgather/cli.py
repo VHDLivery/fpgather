@@ -38,12 +38,28 @@ def main(argv: Sequence[str] | None = None) -> int:
         ),
     )
     parser.add_argument(
-        "--tool", required=True, help="Target tool (currently: vunit)"
+        "--tool", required=True, help="Target tool (vunit or ghdl)"
     )
     parser.add_argument(
-        "--file-type", required=True, help="Output format (currently: csv)"
+        "--file-type", required=True, help="Output format (csv or sh)"
     )
-    parser.add_argument("--output", required=True, help="Output CSV path")
+    parser.add_argument(
+        "--output", required=True, help="Output CSV or Bash script path"
+    )
+    parser.add_argument(
+        "--build-dir", help="GHDL build directory (default: build/ghdl)"
+    )
+    parser.add_argument("--ghdl", help="GHDL executable (default: ghdl)")
+    parser.add_argument(
+        "--ghdl-option",
+        action="append",
+        dest="analysis_options",
+        help="Repeatable analysis flag, e.g. --ghdl-option=-frelaxed-rules",
+    )
+    parser.add_argument(
+        "--ghdl-standard",
+        help="Common GHDL standard: highest or a version such as 2008",
+    )
     args = parser.parse_args(argv)
     try:
         sources = resolve(
@@ -53,11 +69,20 @@ def main(argv: Sequence[str] | None = None) -> int:
             library=args.work_lib_name,
         )
         output = export_sources(
-            sources, args.output, tool=args.tool, file_type=args.file_type
+            sources,
+            args.output,
+            tool=args.tool,
+            file_type=args.file_type,
+            build_dir=args.build_dir,
+            ghdl=args.ghdl,
+            analysis_options=args.analysis_options,
+            ghdl_standard=args.ghdl_standard,
         )
     except SourcesError as exc:
         parser.exit(2, f"error: {exc}\n")
     print(f"Exported {len(sources)} sources: {output}")
+    if args.tool != "vunit":
+        return 0
     print(
         f"Per-file language settings: {output.with_suffix('.settings.json')}"
     )

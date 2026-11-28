@@ -5,9 +5,10 @@ import hashlib
 import io
 import json
 import tempfile
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from pathlib import Path
 
+from .ghdl import render_script
 from .manifest import normalize_library_name
 from .model import Source, SourcesError
 
@@ -98,7 +99,29 @@ def _vunit_csv(sources: list[Source], output: Path) -> Path:
     return output
 
 
-EXPORTERS = {("vunit", "csv"): _vunit_csv}
+def _ghdl_sh(
+    sources: list[Source],
+    output: Path,
+    *,
+    build_dir: str | Path = "build/ghdl",
+    ghdl: str | Path = "ghdl",
+    analysis_options: Sequence[str] = (),
+    ghdl_standard: str | None = None,
+) -> Path:
+    content = render_script(
+        sources,
+        output,
+        build_dir=build_dir,
+        ghdl=ghdl,
+        analysis_options=analysis_options,
+        ghdl_standard=ghdl_standard,
+    )
+    _write_bytes(output, content.encode("utf-8"))
+    output.chmod(0o755)
+    return output
+
+
+EXPORTERS = {("vunit", "csv"): _vunit_csv, ("ghdl", "sh"): _ghdl_sh}
 
 
 def export_sources(
@@ -107,6 +130,10 @@ def export_sources(
     *,
     tool: str,
     file_type: str,
+    build_dir: str | Path | None = None,
+    ghdl: str | Path | None = None,
+    analysis_options: Sequence[str] | None = None,
+    ghdl_standard: str | None = None,
 ) -> Path:
     """Export sources for the selected tool and output format."""
     exporter = EXPORTERS.get((tool, file_type))
@@ -114,7 +141,19 @@ def export_sources(
         raise SourcesError(
             f"Unsupported export: tool={tool!r}, file_type={file_type!r}"
         )
+    options = {
+        name: value
+        for name, value in {
+            "build_dir": build_dir,
+            "ghdl": ghdl,
+            "analysis_options": analysis_options,
+            "ghdl_standard": ghdl_standard,
+        }.items()
+        if value is not None
+    }
+    if options and tool != "ghdl":
+        raise SourcesError("GHDL options require --tool ghdl --file-type sh")
     try:
-        return exporter(list(sources), Path(output).resolve())
+        return exporter(list(sources), Path(output).resolve(), **options)
     except OSError as exc:
         raise SourcesError(f"Cannot write export {output}: {exc}") from exc
