@@ -1,4 +1,4 @@
-# sources.yml → VUnit
+# sources.yml → build inputs
 
 ## Manifest contract
 
@@ -71,3 +71,18 @@ native import of recognized suffixes and helper import of original `.vhd` paths.
 objects without a simulator. Empty HDL files are not a runnable hardware testbench.
 
 Reference: [VUnit CSV import](https://vunit.github.io/py/vunit.html#vunit.ui.VUnit.add_source_files_from_csv).
+
+## GHDL integration
+
+The `ghdl`/`sh` exporter produces executable Bash for analysis only. It preserves
+resolved order and original absolute paths, with one build subdirectory per
+library and `-P` search paths for all selected libraries. Bash arrays preserve
+literal arguments; allowed extra flags cannot override compiler output paths.
+
+Per-source standards are retained by default. `ghdl_standard="highest"` selects
+the newest declared standard for every selected source; an explicit standard
+applies that version to all sources. Neither changes the source objects.
+Unknown standards are rejected. GHDL reports language incompatibilities and
+unsupported compiler features at execution time.
+
+See [GHDL usage](ghdl.md) for CLI/API examples, flags and execution boundaries.

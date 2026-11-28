@@ -41,9 +41,9 @@ Alternatively, use `.venv/bin/python -m fpgather` with the same arguments.
 - `--work-lib-name` sets the entry manifest's library. Its tool-independent
   default is `work`. VUnit rejects that reserved name, so select a concrete
   name such as `top_lib` for VUnit. `--library` remains an alias.
-- `--tool` selects the target tool; currently `vunit` is supported.
+- `--tool` selects the target tool; `vunit` and `ghdl` are supported.
 - `--file-type` selects the **output format**, not a source suffix filter.
-  Currently `csv` is supported.
+  Use `csv` for VUnit or `sh` for GHDL.
 - `--output` selects the CSV location. Each run regenerates the CSV and its
   `.settings.json` companion file.
 
@@ -54,6 +54,17 @@ or supply an absolute path to a shared library directory. The CLI equivalent
 is `--libraries-root vendor`; source paths remain relative to their YAML file.
 Additional tool/format combinations can be added to the registry in
 `src/fpgather/exporters.py` without changing dependency resolution.
+
+## GHDL analysis
+
+Export a Bash analysis script with `--tool ghdl --file-type sh`. Configure
+`--build-dir`, `--ghdl` and repeatable `--ghdl-option=FLAG` arguments as needed.
+Each source retains its language version by default. `--ghdl-standard highest`
+uses the newest selected version for all sources; `--ghdl-standard 2008`
+explicitly selects one common version. VUnit exports are unaffected.
+
+See [GHDL CLI and Python examples](docs/ghdl.md) for a complete runnable example,
+standard compatibility, supported flags and build directory behavior.
 
 ## Manifest format
 
@@ -206,8 +217,9 @@ intentionally empty, so no HDL simulation is performed or required.
 
 GitHub Actions runs on pushes, pull requests and manual dispatches. CI checks
 Ruff lint and formatting, runs the tests and VUnit import testbench on Python
-3.10–3.14, and builds the wheel and source distribution. No HDL simulator is
-required.
+3.10–3.14, and builds the wheel and source distribution. The Python 3.12 CI job
+installs GHDL for real analysis tests; other jobs skip those integration tests
+when GHDL is unavailable.
 
 The build job validates package metadata with Twine and checks the installed
 wheel's CLI in a fresh environment. Successful builds are available as the
