@@ -217,9 +217,10 @@ intentionally empty, so no HDL simulation is performed or required.
 
 GitHub Actions runs on pushes, pull requests and manual dispatches. CI checks
 Ruff lint and formatting, runs the tests and VUnit import testbench on Python
-3.10–3.14, and builds the wheel and source distribution. The Python 3.12 CI job
-installs GHDL for real analysis tests; other jobs skip those integration tests
-when GHDL is unavailable.
+3.10–3.14, and builds the wheel and source distribution. A dedicated GHDL job
+uses `ghcr.io/vhdlivery/docker-ghdl:6.0.0-1` and installs the current checkout
+in a fresh Python environment. Package builds require this job to pass.
+The Python matrix skips real GHDL tests when GHDL is unavailable.
 
 The build job validates package metadata with Twine and checks the installed
 wheel's CLI in a fresh environment. Successful builds are available as the

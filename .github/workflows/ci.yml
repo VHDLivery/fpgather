@@ -51,20 +51,39 @@ jobs:
           cache-dependency-path: pyproject.toml
       - name: Install package and test dependencies
         run: python -m pip install '.[test]'
-      - name: Install GHDL for integration tests
-        if: matrix.python-version == '3.12'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ghdl
-          ghdl --version
       - name: Run unit tests
         run: python -m pytest -q
       - name: Verify fixture and VUnit imports
         run: python test/run.py
 
+  ghdl:
+    name: GHDL integration (Docker)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GHDL_IMAGE: ghcr.io/vhdlivery/docker-ghdl:6.0.0-1
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Test current package with GHDL image
+        shell: bash
+        run: |
+          docker run --rm \
+            --mount "type=bind,src=$GITHUB_WORKSPACE,dst=/input,readonly" \
+            "$GHDL_IMAGE" bash -euo pipefail -c '
+              test_root=$(mktemp -d)
+              cp -R /input/. "$test_root/"
+              python -m venv /tmp/fpgather-test-env
+              /tmp/fpgather-test-env/bin/python -m pip install "$test_root[test]"
+              cd "$test_root"
+              ghdl --version
+              /tmp/fpgather-test-env/bin/python -m pytest -q tests/test_ghdl.py
+            '
+
   build:
     name: Build distribution packages
-    needs: [lint, test]
+    needs: [lint, test, ghdl]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

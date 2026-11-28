@@ -162,3 +162,13 @@ with the consuming project.
 
 See the [GHDL invocation documentation](https://ghdl.github.io/ghdl/using/InvokingGHDL.html)
 and [VHDL standard compatibility](https://ghdl.github.io/ghdl/using/ImplementationOfVHDL.html).
+
+## CI integration tests
+
+The dedicated GHDL CI job uses `ghcr.io/vhdlivery/docker-ghdl:6.0.0-1`
+(GHDL 6.0.0, LLVM backend). It mounts the checkout read-only, copies it into
+container-local temporary storage, and installs that copy into a fresh Python
+environment. This tests the current package, not the fpgather version bundled
+in the image. All tests in `tests/test_ghdl.py` run there, including actual
+cross-library analysis and common-standard selection. Package builds and
+publishing depend on this job passing.
